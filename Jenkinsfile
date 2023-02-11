@@ -1,11 +1,16 @@
 pipeline {
     agent {
         docker {
-            image 'docker:19.03.13'
+            image 'maven:3.6.3-jdk-8'
             args '-v /var/run/docker.sock:/var/run/docker.sock'
         }
     }
     stages {
+        stage('Build Maven Project') {
+            steps {
+                sh 'mvn clean install'
+            }
+        }
         stage('Build Docker Image') {
             steps {
                 sh 'docker build -t myimage .'
