@@ -1,19 +1,23 @@
-pipeline {
-    agent {
-        docker {
-            image 'node:14.15.1'
-            args '-v /var/run/docker.sock:/var/run/docker.sock'
+node {    
+      def app     
+      stage('Clone repository') {               
+             
+            checkout scm    
+      }     
+      stage('Build image') {         
+       
+            app = docker.build("junnlord/vm")    
+       }     
+      stage('Test image') {           
+            app.inside {            
+             
+             sh 'echo "Tests passed"'        
+            }    
+        }     
+       stage('Push image') {
+                                                  docker.withRegistry('https://registry.hub.docker.com', 'git') {            
+       app.push("${env.BUILD_NUMBER}")            
+       app.push("latest")        
+              }    
+           }
         }
-    }
-    stages {
-        stage('Build Docker Image') {
-            steps {
-                sh '''
-                    echo "FROM nginx:alpine" > Dockerfile
-                    echo "COPY index.html /usr/share/nginx/html" >> Dockerfile
-                '''
-                sh 'docker build -t mynginximage .'
-            }
-        }
-    }
-}
